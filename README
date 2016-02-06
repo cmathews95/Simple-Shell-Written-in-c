@@ -1,0 +1,109 @@
+Christie Mathews 
+*Built with Wesley Minner
+***********************
+    SIMPLE SHELL
+***********************
+Makefile functionality:
+* make: compiles program 'simpsh'
+* make dist: packages files into tarball and does some checks
+* make check: executes test.sh, which performs some simple tests on simpsh
+* make clean: removes all files created from 'make', 'test.sh', and 'time.sh'
+* make time: executes time.sh, which profiles bash, simpsh, and execline and 
+	places the results into file 'time_results'
+
+
+simpsh functionality:
+* Working options
+	--rdonly
+	--wronly
+	--rdwr
+	--pipe
+	--close
+	--command
+	--verbose
+	--brief (cancel verbose on rest of commands)
+	--wait 
+	--waitcmd (design problem 1b)
+	--test (used to serialize all commands for verification testing)
+	--pause
+	--abort
+	--catch
+	--default
+	--ignore
+	--profile
+* All oflags options supported
+	--append
+	--cloexec
+	--creat
+	--directory
+	--dsync
+	--excl
+	--nofollow
+	--nonblock
+	--rsync
+	--sync
+	--trunc
+* Flags are supported by pipes (as seen in pipe2 man page) (design problem 1b)
+	--cloexec
+	--nonblock
+	--direct
+* Profile gets resource data for the following options:
+	--rdonly
+	--wronly
+	--rdwr
+	--pipe
+	--close
+	--command
+	--wait
+	--abort
+	--catch
+	--default
+	--ignore
+* Profile reports the sum of all child resource usage when the --wait option is used
+* Profile always reports the sum of all parent resource usage
+* Verifies that the appropriate number of arguments are given
+	--rdonly (1)
+	--wronly (1)
+	--rdwr (1)
+	--close (1)
+	--command (>= 4)
+	--catch (1)
+	--default (1)
+	--ignore (1)
+	--waitcmd (1)
+  
+Notes:
+* Option --test waits for each individual command to finish before starting a 
+  new command (effectively serializing commands).  This is necessary for 
+  verification testing only.
+* In order to test pipes with --wait, it is necessary to use --close on the
+  write ends of all pipes right before the --wait occurs.  Otherwise simpsh
+  will hang, which is the expected behavior.
+* Profile does not get resource data for...
+	--verbose 
+	--brief
+	--test
+	--pause
+	  All oflag options
+  The oflag options set a single integer flag (which would not be meaningful to 
+  profile).  The test option is only used for verification testing.  The pause
+  option could not be profiled because it stops simpsh until the user restarts
+  it, and the resources collected from it would not be meaningful.
+* Profile will only profile commands that come after it (similar to verbose).
+  It should be placed as the first option for simpsh if you wish to profile all
+  the options.
+* Design Problem for lab 1b
+  --pipe was extended to support flags (listed above).  This was really easy to
+    implement, so that's why we did two design problems listed in the lab spec.
+  --waitcmd N was added to wait for individual commands.  N is the command
+    number you wish to wait for, with the first command starting at index 0.  It
+	outputs the commands exit status and arguments in the same style as --wait.
+  
+  
+Known Issues:
+* Execline command "pipeline { prog1 } prog2..." creates a child process and 
+  executes prog1.  The bash 'time' command fails to track this child process 
+  when execline is executed through a script.  Therefore our performance results
+  are inaccurate as the execline test cases all suffered from this inaccuracy.  
+  We could not determine a way to gather child time values within the 
+  limitations of the execline syntax and within the time constraints on the lab.
